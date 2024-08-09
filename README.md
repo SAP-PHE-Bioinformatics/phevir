@@ -19,20 +19,10 @@
 
 ## Introduction
 
-**nf-core/phevir** is a bioinformatics pipeline that ...
+**nf-core/phevir** is a bioinformatics pipeline a public version of the pipeline used at SA Pathology for Viral sequencing using Nanopore sequencing of amplicon data. The one workflow can be used for Influenza, Monkeypox and COVID(not in current version yet as move from snakemake to nextflow).
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+*** PUBLIC VERSION OF THE WORKFLOW STILL IN DEVELOPMENT** May not run correctly, an update will occur shortly with ref files or locations to download that are required by pipeline.
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
-
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
 
 ## Usage
 
@@ -47,11 +37,15 @@ First, prepare a samplesheet with your input data that looks as follows:
 `samplesheet.csv`:
 
 ```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+sample,fastq_1,fastq_2,sample_type, run
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,,
 ```
 
+sample, fastq_1,species and run are all mandatory with only optional being fastq_2. 
 Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
+Run can either be FLU,COVID or MPX as is used to filter samples into the correct subworkflow. 
+sample_type can either be control/patient/qap_sample
+
 
 -->
 
@@ -79,8 +73,6 @@ For more details about the output files and reports, please refer to the
 [output documentation](https://nf-co.re/phevir/output).
 
 ## Credits
-
-nf-core/phevir was originally written by Jcaob May <jacob.may@sa.gov.au>.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
