@@ -21,6 +21,7 @@
 
 **nf-core/phevir** is a bioinformatics pipeline a public version of the pipeline used at SA Pathology for Viral sequencing using Nanopore sequencing of amplicon data. The one workflow can be used for Influenza, Monkeypox and COVID(not in current version yet as move from snakemake to nextflow).
 
+*** PUBLIC VERSION OF THE WORKFLOW STILL IN DEVELOPMENT** May not run correctly, an update will occur shortly with ref files or locations to download that are required by pipeline.
 
 
 ## Usage
@@ -72,8 +73,6 @@ For more details about the output files and reports, please refer to the
 [output documentation](https://nf-co.re/phevir/output).
 
 ## Credits
-
-nf-core/phevir was originally written by Jcaob May <jacob.may@sa.gov.au>.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
