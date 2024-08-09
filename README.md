@@ -36,7 +36,10 @@ First, prepare a samplesheet with your input data that looks as follows:
 
 ```csv
 sample,fastq_1,fastq_2,sample_type, run
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,,
+241231231,24121231.fastq.gz,,patient,MPX
+NEG_1,neg_1.fastq.gz,,control,MPX
+245645123,245645123.fastq.gz,,patient,FLU
+NEG_2,neg_2.fastq.gz,,control,FLU
 ```
 
 sample, fastq_1,species and run are all mandatory with only optional being fastq_2. 
