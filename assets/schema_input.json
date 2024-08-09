@@ -13,6 +13,12 @@
                 "errorMessage": "Sample name must be provided and cannot contain spaces",
                 "meta": ["id"]
             },
+            "species": {
+                "type": "string",
+                "pattern": "^(MPOX|FLUA|FLUB|NEG)$",
+                "errorMessage": "Species must be either 'MPX', 'FLUA', 'FLUB'",
+                "meta": ["species"]
+            },
             "fastq_1": {
                 "type": "string",
                 "format": "file-path",
@@ -26,8 +32,15 @@
                 "exists": true,
                 "pattern": "^\\S+\\.f(ast)?q\\.gz$",
                 "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+            },
+            "run":{
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "must have MPOX or FLU based on run type",
+                "meta" : ["run"]
+
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": ["sample", "fastq_1", "species", "run"]
     }
 }

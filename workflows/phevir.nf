@@ -10,7 +10,8 @@ include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_phevir_pipeline'
-
+include { MPX                    } from '../subworkflows/local/mpx'
+include { INFLUENZA              } from '../subworkflows/local/influenza'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -27,15 +28,21 @@ workflow PHEVIR {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
-        ch_samplesheet
-    )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    //ch_samplesheet.view()
+    ch_mpox= ch_samplesheet.filter{meta, reads -> meta.run.contains('MPOX')}
+    // ch_NEG = ch_samplesheet.filter{meta, reads -> meta.species == 'NEG'}
+    ch_influenza = ch_samplesheet.filter{meta, reads -> meta.run.contains('FLU')}
 
+    INFLUENZA(
+        ch_influenza
+    )
+
+    MPX(
+        ch_mpox
+    )
+
+    ch_multiqc_files = ch_multiqc_files.mix(MPX.out.multiqc)
+   
     //
     // Collate and save software versions
     //
@@ -78,7 +85,7 @@ workflow PHEVIR {
             sort: true
         )
     )
-
+    
     MULTIQC (
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
