@@ -15,8 +15,8 @@
             },
             "species": {
                 "type": "string",
-                "pattern": "^(MPOX|FLUA|FLUB|NEG)$",
-                "errorMessage": "Species must be either 'MPX', 'FLUA', 'FLUB'",
+                "pattern": "^(MPOX|IAV|SARS-CoV-2|control)$",
+                "errorMessage": "Species must be either 'MPX', 'IAV', 'SARS-CoV-2' or 'control'",
                 "meta": ["species"]
             },
             "fastq_1": {
@@ -33,14 +33,14 @@
                 "pattern": "^\\S+\\.f(ast)?q\\.gz$",
                 "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
             },
-            "run":{
+            "amplicon":{
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "must have MPOX or FLU based on run type",
-                "meta" : ["run"]
+                "errorMessage": "must have MPOX, FLU, COVID based on run type",
+                "meta" : ["amplicon"]
 
             }
         },
-        "required": ["sample", "fastq_1", "species", "run"]
+        "required": ["sample", "fastq_1", "species", "amplicon"]
     }
 }

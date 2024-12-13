@@ -15,6 +15,7 @@ process QUAST {
     output:
     tuple val(meta), path("${prefix}")                   , emit: results
     tuple val(meta), path("${prefix}.tsv")               , emit: tsv
+    tuple val(meta), path("${prefix}_trans.tsv") , optional: true , emit: trans_tsv
     tuple val(meta), path("${prefix}_transcriptome.tsv") , optional: true , emit: transcriptome
     tuple val(meta), path("${prefix}_misassemblies.tsv") , optional: true , emit: misassemblies
     tuple val(meta), path("${prefix}_unaligned.tsv")     , optional: true , emit: unaligned
@@ -57,10 +58,12 @@ process QUAST {
     """
     mkdir -p $prefix
     touch $prefix/report.tsv
+    touch $prefix/transposed_report.tsv
     touch $prefix/report.html
     touch $prefix/report.pdf
     touch $prefix/quast.log
     touch $prefix/transposed_report.txt
+    touch $prefix/transposed_report.tsv
     touch $prefix/transposed_report.tex
     touch $prefix/icarus.html
     touch $prefix/report.tex
@@ -76,6 +79,7 @@ process QUAST {
     touch $prefix/icarus_viewers/contig_size_viewer.html
 
     ln -s $prefix/report.tsv ${prefix}.tsv
+    ln -s $prefix/transposed_report.tsv ${prefix}_trans.tsv
 
     if [ $fasta ]; then
         touch $prefix/basic_stats/NGx_plot.pdf

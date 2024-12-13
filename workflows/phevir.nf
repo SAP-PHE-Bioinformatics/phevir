@@ -12,6 +12,7 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_phevir_pipeline'
 include { MPX                    } from '../subworkflows/local/mpx'
 include { INFLUENZA              } from '../subworkflows/local/influenza'
+include { COVID                  } from '../subworkflows/local/covid'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -22,30 +23,32 @@ workflow PHEVIR {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
+    
 
     main:
 
+    ch_samplesheet // Debugging step to inspect the channel with meta and file
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    //ch_samplesheet.view()
-    ch_mpox= ch_samplesheet.filter{meta, reads -> meta.run.contains('MPOX')}
-    // ch_NEG = ch_samplesheet.filter{meta, reads -> meta.species == 'NEG'}
-    ch_influenza = ch_samplesheet.filter{meta, reads -> meta.run.contains('FLU')}
+    // ch_samplesheet.view() 
+    ch_influenza = ch_samplesheet.filter { meta, reads -> meta.amplicon.contains('IAV') }
+    ch_mpx = ch_samplesheet.filter { meta, reads -> meta.amplicon.contains('MPOX') }
+    ch_covid = ch_samplesheet.filter { meta, reads -> meta.amplicon.contains('COVID') }
 
-    INFLUENZA(
-        ch_influenza
-    )
 
-    MPX(
-        ch_mpox
-    )
+// Compute counts from the channel
 
-    ch_multiqc_files = ch_multiqc_files.mix(MPX.out.multiqc)
+    // Dynamically invoke workflows
+        INFLUENZA(ch_influenza)
+
+
+        COVID(ch_covid)
    
-    //
-    // Collate and save software versions
-    //
+
+        //MPX(ch_mpx)
+   
+
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",

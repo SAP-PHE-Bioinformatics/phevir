@@ -1,60 +1,66 @@
 process VADR {
-  tag           "QC metrics"
-  label         "process_medium"
-  container     'staphb/vadr:1.6.3'
+  tag "$meta.id"
+  label 'process_low'
+
+  conda 'pkru22::vadr=1.6.3'
+  container 'staphb/vadr:1.6.3'
 
   input:
-  file(fasta)
+  tuple val(meta), path(fasta)
+  val(vadr_args)
+  val(vadr_trim_args)
 
   output:
-  path "vadr/*", emit: vadr_files, optional: true
-  path "vadr/vadr.vadr.sqa", emit: vadr_file,  optional: true
-  path "logs/${task.process}/${task.process}.${workflow.sessionId}.log"
-  path "versions.yml", emit: versions
+  tuple val(meta), path("${prefix}/*.vadr.pass.tbl"), optional: true, emit: feature_table
+  tuple val(meta), path("${prefix}/*.vadr.pass.fa"), optional: true, emit: pass_fasta
+  tuple val(meta), path("${prefix}/"), optional: true, emit: vadr_outdir
+  path "versions.yml", optional: true, emit: versions
 
-  shell:
-  def args      = task.ext.args ?: "${params.vadr_options}"
-  def args2  = task.ext.args2  ?: '/opt/vadr/vadr-models'
-  def trim_args = task.ext.trim_args ?: " "
-  def fastas    = fasta.join(" ")
+  script:
+  def args = vadr_trim_args ?: ''
+  def args2 = vadr_args ?: ''
+  prefix = task.ext.prefix ?: "${meta.id}"
   """
-    mkdir -p logs/${task.process}
-    log=logs/${task.process}/${task.process}.${workflow.sessionId}.log
 
-    date > \$log
-    v-annotate.pl -h | tee -a \$log
+  if [ ! -s $fasta ]; then
+        echo "Input FASTA file is empty. Skipping VADR process."
+        exit 0
+    fi
+  
+  fasta-trim-terminal-ambigs.pl ${args} $fasta > ${prefix}_trimmed.fasta
 
-    for fasta in ${fastas}
-    do
-      lines=\$(grep -v ">" \$fasta | fold -w 75 | grep -e A -e G -e C -e T | wc -l | awk '{print \$1}' )
-      if [ "\$lines" -gt 2 ] ; then cat \$fasta >> ultimate_fasta.fasta ; fi
-    done
-
-    if [ -f "ultimate_fasta.fasta" ]
-    then
-      fasta-trim-terminal-ambigs.pl ${trim_args} \
-        ultimate_fasta.fasta > trimmed_ultimate.fasta
+  if [ ! -s ${prefix}_trimmed.fasta ]; then
+        echo "Trimmed FASTA is empty. Skipping VADR process."
+        exit 0
     fi
 
-    if [ -s "trimmed_ultimate.fasta" ] &&  [ -f "trimmed_ultimate.fasta" ]
-    then
-      v-annotate.pl ${args} \
-        --cpu ${task.cpus} \
-        --noseqnamemax \
-        --mkey ${params.vadr_reference} \
-        --mdir ${args2} \
-        trimmed_ultimate.fasta \
-        vadr \
-        | tee -a \$log
-    fi
+  v-annotate.pl \\
+    $args2 \\
+    ${prefix}_trimmed.fasta \\
+    ${prefix}
 
-    if [ -f "ultimate_fasta.fasta" ]   ; then cp ultimate_fasta.fasta vadr/combined.fasta  ; fi
-    if [ -f "trimmed_ultimate.fasta" ] ; then cp trimmed_ultimate.fasta vadr/trimmed.fasta ; fi
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+      vadr: \$(v-annotate.pl -h | perl -ne 'print "\$1\\n" if /^# VADR (\\d+\\.\\d+\\.\\d+)/')
+  END_VERSIONS
+  """
+}
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        vadr: \$(v-annotate.pl -h | grep VADR | head -n 1 | awk '{print \$3 "_" \$4 "_" \$5}')
-        container: ${task.container}
-    END_VERSIONS
+
+process VADR_SUMMARIZE_ISSUES {
+  executor 'local'
+  memory 100.MB
+
+  input:
+  path(vadr_output, stageAs: "input*/*")
+
+  output:
+  path('vadr-annotation-issues.txt'), emit: issues
+  path('vadr-annotation-failed-sequences.txt'), emit: failed
+
+  script:
+  """
+  cat input*/**/*.alt.list | awk 'NR == 1 || \$0 !~ /^#/' > vadr-annotation-issues.txt
+  cat input*/**/*.fail.list > vadr-annotation-failed-sequences.txt
   """
 }

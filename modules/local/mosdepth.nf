@@ -1,0 +1,34 @@
+include { fluPrefix } from './misc'
+
+process MOSDEPTH_GENOME {
+  tag "$sample|$segment|$ref_id"
+  label 'process_low'
+
+  conda 'bioconda::mosdepth=0.3.3'
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      container "https://depot.galaxyproject.org/singularity/mosdepth:0.3.3--h37c5b7d_2"
+  } else {
+      container "quay.io/biocontainers/mosdepth:0.3.3--h01d7912_0"
+  }
+  input:
+  tuple val(meta), path(fasta), path(bam_bai)
+
+  output:
+  tuple val(sample), val(segment), val(ref_id), path("*.per-base.bed.gz"), emit: bedgz
+  path "*.global.dist.txt", emit: mqc
+  path "*.{txt,gz,csi,tsv}"
+  path  "versions.yml"                          , emit: versions
+
+  script:
+  def prefix = fluPrefix(sample, segment, ref_id)
+  """
+  mosdepth \\
+      --fast-mode \\
+      $prefix \\
+      ${bam_bai[0]}
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+     mosdepth: \$(mosdepth --version 2>&1 | sed 's/^.*mosdepth //; s/ .*\$//')
+  END_VERSIONS
+  """
+}

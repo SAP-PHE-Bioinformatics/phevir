@@ -1,0 +1,36 @@
+process NEXTCLADE_DATASETGET {
+    tag "pulling dataset"
+    label 'process_low'
+
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/nextclade:3.1.0--h9ee0642_0' :
+        'quay.io/biocontainers/nextclade:3.1.0--h9ee0642_0' }"
+
+    input:
+    tuple val(dataset)
+
+    output:
+    tuple val(dataset), path("$prefix") , emit: dataset_fetch
+    path "versions.yml"              , emit: versions
+ 
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    def args = task.ext.args ?: ''
+    prefix = task.ext.prefix ?: "./${dataset}_dir"
+
+    """
+    nextclade \\
+        dataset \\
+        get \\
+        $args \\
+        --name $dataset \\
+        --output-dir $prefix
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        nextclade: \$(echo \$(nextclade --version 2>&1) | sed 's/^.*nextclade //; s/ .*\$//')
+    END_VERSIONS
+    """
+}

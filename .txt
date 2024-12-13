@@ -1,0 +1,22 @@
+/tmp/amrfinder.pgooph
+
+[1;31m*** ERROR ***[0m
+Cannot create output file '/scratch/bacterial_pathogens/BON24006/AMRFinderPlus/_amrfinder.tsv'
+
+HOSTNAME: frgeneseq03.had.sa.gov.au
+SHELL: /bin/bash
+PWD: /scratch/viral/nf-core-phevir_v2
+PATH: /usr/local/go/bin:/usr/local/go/bin:/home/users/fhajmay/.vscode-server/bin/fee1edb8d6d72a0ddff41e5f71a671c23ed924b9/bin/remote-cli:/home/users/fhajmay/.cargo/bin:/usr/local/go/bin:/usr/local/go/bin:/phe/tools/miniconda3/envs/amrfinder/bin:/phe/tools/miniconda3/condabin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/users/fhajmay/go/bin:/home/users/fhajmay/.local/bin:/home/users/fhajmay/bin:/home/users/fhajmay/go/bin
+Progam name:  amrfinder
+Command line: amrfinder -n /scratch/bacterial_pathogens/BON24006/FINAL_OUTPUT/complete/sample_final.fasta --output /scratch/bacterial_pathogens/BON24006/AMRFinderPlus/_amrfinder.tsv --name BON24006 --threads 8 --log amrfinder_log.txt
+/tmp/amrfinder.9Fl7n2
+
+[1;31m*** ERROR ***[0m
+Cannot create output file '/scratch/bacterial_pathogens/BON24006/AMRFinderPlus/BON24006_amrfinder.tsv'
+
+HOSTNAME: frgeneseq03.had.sa.gov.au
+SHELL: /bin/bash
+PWD: /scratch/viral/nf-core-phevir_v2
+PATH: /usr/local/go/bin:/usr/local/go/bin:/home/users/fhajmay/.vscode-server/bin/fee1edb8d6d72a0ddff41e5f71a671c23ed924b9/bin/remote-cli:/home/users/fhajmay/.cargo/bin:/usr/local/go/bin:/usr/local/go/bin:/phe/tools/miniconda3/envs/amrfinder/bin:/phe/tools/miniconda3/condabin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/users/fhajmay/go/bin:/home/users/fhajmay/.local/bin:/home/users/fhajmay/bin:/home/users/fhajmay/go/bin
+Progam name:  amrfinder
+Command line: amrfinder -n /scratch/bacterial_pathogens/BON24006/FINAL_OUTPUT/complete/sample_final.fasta --output /scratch/bacterial_pathogens/BON24006/AMRFinderPlus/BON24006_amrfinder.tsv --name BON24006 --threads 8 --log amrfinder_log.txt

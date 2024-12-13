@@ -6,19 +6,21 @@ process NEXTCLADE {
   
   input:
   file(fasta)
-  path(dataset)
+  tuple val(dataset_name), path(dataset)
 
   output:
-  path "nextclade/nextclade.csv", emit: nextclade_file
-  path "nextclade/*", emit: results
-  tuple file("nextclade/nextclade.aligned.fasta"), file("nextclade/nextclade.nwk"), emit: prealigned, optional: true
+  path "nextclade/combined_${dataset_name}.csv", emit: nextclade_file
+  path "nextclade/*", emit: results, optional: true
+  path("nextclade/combined_${dataset_name}.tsv")           , emit: tsv
+
+  tuple file("nextclade/${prefix}.aligned.fasta"), file("nextclade/${prefix}.nwk"), emit: prealigned, optional: true
   path "logs/${task.process}/${task.process}.${workflow.sessionId}.log"
   path "versions.yml", emit: versions
 
   shell:
   def args   = task.ext.args ?: " "
   def files  = fasta.join(" ")
-  def prefix = task.ext.prefix ?: "combined"
+  def prefix = task.ext.prefix ?: "combined_${dataset_name}"
   """
     mkdir -p nextclade dataset logs/${task.process}
     log=logs/${task.process}/${task.process}.${workflow.sessionId}.log
@@ -27,19 +29,16 @@ process NEXTCLADE {
     nextclade --version >> \$log
     nextclade_version=\$(nextclade --version)
 
-    for fasta in ${files}
-    do
-      cat \$fasta >> ultimate_fasta.fasta
-    done
 
     nextclade run ${args} \
       --input-dataset ${dataset} \
       --output-all=nextclade/ \
+      --output-basename ${prefix} \\
       --jobs ${task.cpus} \
-      ultimate_fasta.fasta \
+      $fasta \
       | tee -a \$log
 
-    cp ultimate_fasta.fasta nextclade/${prefix}.fasta
+    cp $fasta nextclade/${prefix}.fasta
 
     if [ -f "dataset/pathogen.json" ]
     then

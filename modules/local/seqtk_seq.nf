@@ -1,8 +1,8 @@
 // Import generic module functions
-include { fluPrefix } from './functions'
+include { fluPrefix } from './misc'
 
 process SEQTK_SEQ{
-  tag "$meta.id|$meta.segment|$meta.ref_id"
+  tag "$sample|$segment|$ref_id"
   // use default process resources
 
   conda "bioconda::seqtk=1.3"
@@ -13,7 +13,7 @@ process SEQTK_SEQ{
   }
 
   input:
-  tuple val(meta), path(reads)
+  tuple val(sample), val(segment), val(ref_id), path(reads)
   path (fasta)
 
   output:
