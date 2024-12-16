@@ -25,7 +25,7 @@ include { SORT_H_TYPING                                       } from '../../modu
 include { MULTIQC                                             } from '../../modules/local/multiqc'
 include { FASTP                                               } from '../../modules/nf-core/fastp'
 include { PIGZ_UNCOMPRESS as PIGZ_FASTA; PIGZ_UNCOMPRESS as PIGZ_META } from '../../modules/nf-core/pigz/uncompress'
-include { SUMMARY } from '../../modules/local/summary_flu'
+include { SUMMARY_IAV } from '../../modules/local/summary_flu'
 include { CAT_FASTA } from '../../modules/local/misc'
 include { RESISTANCE } from '../../modules/local/gisaid_resistance'
 include { KRAKEN2_KRAKEN2 } from '../../modules/nf-core/kraken2/main'
@@ -161,7 +161,7 @@ ASSEMBLY_QC.out.HA
 
   ch_multiqc = Channel.empty()
   
-    SUMMARY(
+    SUMMARY_IAV(
         ASSEMBLY_QC.out.stats,
         ASSEMBLY_QC.out.irma_consensus_qc,
         ASSEMBLY_QC.out.typing_report,

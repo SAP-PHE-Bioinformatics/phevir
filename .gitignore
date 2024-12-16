@@ -6,4 +6,6 @@ results/
 testing/
 testing*
 *.pyc
+bin/summary_flu_internal.py
+bin/summary_cov_internal.py
 

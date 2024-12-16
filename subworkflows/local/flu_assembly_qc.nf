@@ -43,7 +43,7 @@ workflow ASSEMBLY_QC {
     ch_HA                              = Channel.empty()
     ch_NA                              = Channel.empty()
 
-    irma_module = Channel.of('FLU-minion')
+    irma_module = Channel.of('FLU')
     IRMA(clean_reads, irma_module.first())
 
     ch_assembly = IRMA.out.assembly
@@ -54,7 +54,6 @@ workflow ASSEMBLY_QC {
     ch_NA = IRMA.out.NA
 
     IRMA_CONSENSUS_QC(IRMA.out.assembly)
-    ch_majority_consensus = IRMA.out.majority_consensus
     irma_consensus_qc_files = IRMA_CONSENSUS_QC.out.irma_consensus_qc
 
     ch_irma_consensus_qc_results = irma_consensus_qc_files
@@ -70,8 +69,8 @@ workflow ASSEMBLY_QC {
             return ([qc_header] + qc_contentWithoutHeaders).join("\n")
         }
 
-    IRMA_REPORT(ch_irma_consensus_qc_results)
-    irma_consensus_qc_tsv = IRMA_REPORT.out.irma_consensus_qc_tsv.collectFile(name: "irma_consensus_qc.tsv", storeDir: params.outdir)
+    //IRMA_REPORT(ch_irma_consensus_qc_results)
+    irma_consensus_qc_tsv = ch_irma_consensus_qc_results.collectFile(name: "irma_consensus_qc.tsv", storeDir: "${params.outdir}/IAV", keepHeader: true, sort: true, skip: 1)
 
     IRMA.out.irma_fasta
         .flatMap { meta, fasta_file_paths ->
@@ -129,7 +128,7 @@ workflow ASSEMBLY_QC {
 
     MERGE_STATS(ch_combined)
     
-    all_sample_stats=MERGE_STATS.out.merged_stats.collectFile(name: "all_samples_merged.stats", storeDir: params.outdir, keepHeader: true, sort: true, skip: 1)
+    all_sample_stats=MERGE_STATS.out.merged_stats.collectFile(name: "all_FLU_samples_merged.stats", storeDir: "${params.outdir}/IAV", keepHeader: true, sort: true, skip: 1)
 
     ABRICATE_FLU(IRMA.out.assembly)
     ch_versions = ch_versions.mix(ABRICATE_FLU.out.versions)
@@ -153,7 +152,7 @@ workflow ASSEMBLY_QC {
         }
 
 
-    typing_report_tsv = ABRICATE_REPORT.out.tsv_combined.map { meta, file -> file }.collectFile(name: 'flu_typing_report.tsv', storeDir: params.outdir, sort: true, keepHeader: true, skip: 1)
+    typing_report_tsv = ABRICATE_REPORT.out.tsv_combined.map { meta, file -> file }.collectFile(name: 'flu_typing_report.tsv', storeDir: "${params.outdir}/IAV", sort: true, keepHeader: true, skip: 1)
 
     ch_nextclade_for_sort = ABRICATE_REPORT.out.tsv_combined
 

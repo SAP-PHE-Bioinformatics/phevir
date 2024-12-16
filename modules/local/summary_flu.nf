@@ -1,14 +1,11 @@
-process SUMMARY {
+process SUMMARY_IAV {
     tag "Create report"
     label 'process_medium'
     // using shiptv container since it has pandas, rich, typer installed
     conda '../../assets/test.yaml'
-    // // if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    // //     container 'https://depot.galaxyproject.org/singularity/shiptv:0.4.0--pyh5e36f6f_0'
-    // // } else {
-    // //     container 'quay.io/biocontainers/shiptv:0.4.0--pyh5e36f6f_0'
-    // // }
 
+    container 'docker://iidjmay/python_odbc:latest'
+    
     input:
     path(qc)
     path(irma_consensus_qc)
@@ -22,7 +19,7 @@ process SUMMARY {
    
     
     output:
-    path("${runID}.csv"), emit: report
+    path("${runID}_IAV.csv"), emit: report
 
     script:
     """

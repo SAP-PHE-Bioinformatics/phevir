@@ -10,13 +10,13 @@ process PANGO_COLLAPSE {
     val runID
 
     output:
-    tuple val(meta), path("*.txt"), emit: collapsed
+    path("*.tsv"), emit: collapsed
     path  "versions.yml"            , emit: versions
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${runID}"
+    def prefix = "${runID}"
     """
-    pango-collapse $nextclade --output ${prefix} --collapse-file $collapse_file --collapse-column VOC_Lineage -l Nextclade_pango
+    pango-collapse $nextclade --output ${prefix}_collapsed.tsv --collapse-file $collapse_file --collapse-column VOC_Lineage -l Nextclade_pango
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

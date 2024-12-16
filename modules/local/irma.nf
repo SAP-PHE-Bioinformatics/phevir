@@ -28,8 +28,6 @@ process IRMA {
   tuple val(meta), path("*.irma_type.txt")           , emit: irma_type
   tuple val(meta), path("*.irma_subtype.txt")        , emit: irma_subtype
   tuple val(meta), path("*.irma.typing.tsv")         , emit: tsv
-  tuple val(meta), path("${meta.id}.irma.consensus.fasta"), optional: true, emit: consensus
-  tuple val(meta), path("${meta.id}.irma.majority_consensus.fasta"), optional: true, emit: majority_consensus
   path "*.irma.log", emit: log
   path "versions.yml", emit: versions
 

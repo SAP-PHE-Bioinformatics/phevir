@@ -12,7 +12,6 @@ process ARTIC_MINION {
     path  ("primer-schemes/${scheme}/V${scheme_version}/${scheme}.reference.fasta")
     path  ("primer-schemes/${scheme}/V${scheme_version}/${scheme}.scheme.bed")
     path  medaka_model_file
-    val(medaka_model_string)
     val   scheme
     val   scheme_version
 
@@ -27,11 +26,9 @@ process ARTIC_MINION {
     tuple val(meta), path("${prefix}.consensus.fasta")                , emit: fasta
     tuple val(meta), path("${prefix}.pass.vcf.gz")                    , emit: vcf
     tuple val(meta), path("${prefix}.pass.vcf.gz.tbi")                , emit: tbi
-    tuple val(meta), path("*.json"), optional:true                    , emit: json
     path  "versions.yml"                                              , emit: versions
 
-    when:
-    task.ext.when == null || task.ext.when
+   
 
     script:
     def args = task.ext.args   ?: ''

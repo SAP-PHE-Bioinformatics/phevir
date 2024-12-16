@@ -4,21 +4,11 @@ import argparse
 from sqlalchemy import create_engine
 from datetime import datetime
 import io, os, warnings
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
 
 warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
 
-def import_to_sql(df, table_name):
-    load_dotenv('/scratch/pheed/config_files/')
-    sql_connection_string = os.getenv("SQLALCHEMY_DATABASE_URL")
-    print(sql_connection_string)
-    engine = create_engine("mssql+pyodbc://sa:WGSmaster22!@frgeneseqgpu/PHEED?driver=ODBC+Driver+17+for+SQL+Server")
-    try:
-        df.to_sql(table_name, engine, if_exists='append', index=False)
-        print("Data has been imported successfully.")
-    except Exception as error:
-        print("Error connecting to SQL Database, check script and if database online. Results not Transferred!", error)
 
 
 def aggregate_mutations(mutations_file):
@@ -124,6 +114,8 @@ def main(tsv_file_path, excel_file_path, qc_file_path, kraken2_file_path, drug_s
     df_tsv = pd.read_csv(tsv_file_path, sep='\t', usecols=['seqName', 'clade', 'qc.overallStatus', 'short-clade'])
     df_tsv_filtered = df_tsv[~df_tsv['clade'].isin(['NA', 'NaN', 'na', None])].dropna(subset=['clade'])
     df_tsv_filtered['Sample'] = df_tsv_filtered['seqName'].str.split('_').str[0]
+    #rename qc.OverallStatus to nextclade_qc
+    df_tsv_filtered = df_tsv_filtered.rename(columns={'qc.overallStatus': 'nextclade_qc'})
 
 
     # Merge QC and TSV data
@@ -197,11 +189,10 @@ def main(tsv_file_path, excel_file_path, qc_file_path, kraken2_file_path, drug_s
     df_merged = df_merged[[col for col in desired_order if col in df_merged.columns]]
 
     # Export to CSV
-    output_csv_path = f'{run_id}.csv'
+    output_csv_path = f'{run_id}_IAV.csv'
     df_merged.to_csv(output_csv_path, index=False)
     
-    # Import to SQL
-    import_to_sql(df_merged, 'resp_results')
+   
 
 
     return output_csv_path

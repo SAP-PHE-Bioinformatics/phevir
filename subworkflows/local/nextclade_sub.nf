@@ -19,6 +19,10 @@ workflow NEXTCLADE_SUB {
     run_samples
 
     main:
+
+    //debug input
+    //run_samples.view()
+
     ch_versions              = Channel.empty()
     ch_nextclade_report      = Channel.empty()
     ch_prealigned         = Channel.empty()
@@ -43,6 +47,7 @@ workflow NEXTCLADE_SUB {
     emit:
     fasta_aligned          = NEXTCLADE.out.prealigned
     report_tsv           = NEXTCLADE.out.tsv
+    report_csv           = NEXTCLADE.out.nextclade_file
     nextclade_report       = ch_nextclade_report
     versions               = ch_versions
 }
