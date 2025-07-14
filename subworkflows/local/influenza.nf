@@ -53,7 +53,8 @@ workflow INFLUENZA {
 
     runID = params.run_id
     println "RunID: ${runID}"
-    ch_coverage_tsv = file(params.outdir + '/coverage.tsv')
+    amplicon = "IAV"
+    ch_coverage_tsv = file("${params.outdir}/${runID}_${amplicon}" + '/coverage.tsv')
     ch_influenza_db_fasta = Channel.of(['NCBI_db', file(params.ncbi_influenza_fasta)]).view()
     ch_influenza_metadata = Channel.of(['NCBI_meta', file(params.ncbi_influenza_metadata)])
     if (params.clair3_user_variant_model) {
@@ -150,14 +151,14 @@ ASSEMBLY_QC.out.HA
     //CAT_FASTA(runID, CAT_CONSENSUS.out.consensus_fasta)
     ASSEMBLY_QC.out.assembly
             .map { it[1] }
-            .collectFile(name: "${runID}.fasta", storeDir: params.outdir, sort: true)
+            .collectFile(name: "${runID}.fasta", storeDir: "${params.outdir}/${runID}_${amplicon}", sort: true)
             .set { consensus_for_run }
 
 
     //uses the consensus fasta file to get the resistance mutations from FLUserver (GISAID)
     RESISTANCE(consensus_for_run)
 
-    nextclade_summary = NEXTCLADE_SUB.out.report_tsv.collectFile(name: "${runID}_nextclade_summary.tsv", storeDir: params.outdir, sort: true, keepHeader: true, skip: 1)
+    nextclade_summary = NEXTCLADE_SUB.out.report_tsv.collectFile(name: "${runID}_nextclade_summary.tsv", storeDir: "${params.outdir}/${runID}_${amplicon}", sort: true, keepHeader: true, skip: 1)
 
   ch_multiqc = Channel.empty()
   

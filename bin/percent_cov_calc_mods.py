@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 # version = '1.0.0'
@@ -69,6 +70,7 @@ def getOptions():
 
 def get_fasta_file_basename(fasta_file_path):
     basename = fasta_file_path.split("/")[-1]  # strip directories
+    print(fasta_file_path)
     return basename
 
 
@@ -81,8 +83,23 @@ def get_segment_name(fasta_file_path):
 def get_gene_name(fasta_file_path):
     basename = fasta_file_path.split("/")[-1]  # strip directories
     segment_name = basename.split(".")[0]  # remove file extension
-    gene_name = segment_name.split("_")[1]  # extract gene name
-    return gene_name
+
+    gene_name = segment_name.split("_")  # Split using "_"
+    
+    if len(gene_name) > 1:
+        return gene_name[1]  # Extract gene name
+    else:
+        print(f"Warning: Could not extract gene name from '{basename}'. Skipping.")
+        return None
+    
+# def get_gene_name(fasta_file_path):
+#     basename = fasta_file_path.split("/")[-1]  # strip directories
+#     segment_name = basename.split(".")[0]  # remove file extension
+#     gene_name = segment_name.split("_")[1]  # extract gene name
+#     if len(gene_name) > 1:
+#         return gene_name[1]  # extract gene name
+#     else:
+#         return None  # or raise an error
 
 
 def get_seq_length(fasta_file_path):
@@ -97,7 +114,10 @@ def get_seq_length(fasta_file_path):
 
 
 def calc_percent_cov(seq_length, ref_len_dict, segment_name):
-    # calcuate per cov based on expected ref length
+    if segment_name not in ref_len_dict:
+        print(f"Warning: Segment name '{segment_name}' not found in reference dictionary.")
+        return None  # Handle the case properly    # calcuate per cov based on expected ref length
+
     expected_length = ref_len_dict[segment_name]
     percent_coverage = round(((seq_length / expected_length) * 100), 2)
 
@@ -131,14 +151,31 @@ if __name__ == "__main__":
     meta_id = options.meta_id
 
     basename = get_fasta_file_basename(fasta_file_path=fasta_file_path)
-
+    
     segment_name = get_segment_name(fasta_file_path=fasta_file_path)
     gene_name = get_gene_name(fasta_file_path=fasta_file_path)
-
+    
     seq_length = get_seq_length(fasta_file_path=fasta_file_path)
     percent_coverage = calc_percent_cov(seq_length=seq_length, ref_len_dict=ref_len_dict, segment_name=segment_name)
-
+    
     reference_length = ref_len_dict[segment_name]
+
+ # **Skip processing if gene_name is missing**
+    if not (".fa" in fasta_file_path or ".fasta" in fasta_file_path):
+        print(f"Warning: File '{fasta_file_path}' does not have a valid FASTA extension (.fa or .fasta). Skipping.")
+    
+    if gene_name is None:
+        print("Warning: Could not extract gene name from filename. Skipping this file.")
+    
+    if seq_length is None:
+        print("Warning: Could not calculate seq length. Skipping this file.")
+    
+    if percent_coverage is None:
+        print(f"Warning: Could not calculate percent coverage for segment '{segment_name}'. Skipping.")
+    
+    if segment_name not in ref_len_dict:
+        print(f"Warning: Segment name '{segment_name}' not found in reference dictionary. Skipping.")
+        
 
     create_output(
         meta_id=meta_id,
@@ -146,4 +183,24 @@ if __name__ == "__main__":
         seq_length=seq_length,
         percent_coverage=percent_coverage,
         reference_length=reference_length,
-    )
+        )
+    # seq_length = get_seq_length(fasta_file_path=fasta_file_path)
+    # percent_coverage = calc_percent_cov(seq_length=seq_length, ref_len_dict=ref_len_dict, segment_name=segment_name)
+
+    # if gene_name is None:
+    #     print("Error: Could not extract gene name from filename. Please check the input file format.")
+    #     sys.exit(1)
+
+    # if percent_coverage is None:
+    #     print("Error: Could not calculate percent coverage. Please check the segment name.")
+    #     sys.exit(1)
+
+    # reference_length = ref_len_dict[segment_name]
+
+    # create_output(
+    #     meta_id=meta_id,
+    #     segment_name=segment_name,
+    #     seq_length=seq_length,
+    #     percent_coverage=percent_coverage,
+    #     reference_length=reference_length,
+    # )

@@ -36,7 +36,7 @@
             "amplicon":{
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "must have MPOX, FLU, COVID based on run type",
+                "errorMessage": "must have MPOX, FLU, COV based on run type",
                 "meta" : ["amplicon"]
 
             }

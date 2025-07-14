@@ -1,14 +1,15 @@
-process SNPDISTS {
+process DATAMASH {
     tag "$meta.id"
     label 'process_low'
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/snp-dists:0.8.2--h5bf99c6_0' :
-        'biocontainers/snp-dists:0.8.2--h5bf99c6_0' }"
+        'https://depot.galaxyproject.org/singularity/datamash:1.1.0--0' :
+        'biocontainers/datamash:1.1.0--0' }"
+// docker pull quay.io/biocontainers/datamash:1.1.0--0
 
     input:
-    tuple val(meta), path(alignment)
+    tuple val(meta), path(tsv)
 
     output:
     tuple val(meta), path("*.tsv"), emit: tsv
@@ -21,13 +22,13 @@ process SNPDISTS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    snp-dists \\
-        $args \\
-        $alignment > ${prefix}.tsv
+    cat $tsv | datamash \\
+        min 3 mean 3 median 3 max 3 \\
+        > ${prefix}_coverage.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        snpdists: \$(snp-dists -v 2>&1 | sed 's/snp-dists //;')
+        datamash: \$(echo \$(datamash --version 2>&1) | head -n 1 |cut -d " " -f 4)
     END_VERSIONS
     """
 }

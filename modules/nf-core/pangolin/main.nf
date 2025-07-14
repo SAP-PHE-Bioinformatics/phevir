@@ -25,7 +25,7 @@ process PANGOLIN {
 
     pangolin \\
         $fasta\\
-        --outfile ${prefix}.pangolin.csv \\
+        --outfile ${prefix}_pangolin.csv \\
         --threads $task.cpus \\
         $args
 

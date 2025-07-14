@@ -24,7 +24,7 @@ process SUMMARY_COV {
     mkdir -p fasta_dir
     mv $fasta_files fasta_dir/
 
-    summary_cov.py \
+    summary_cov_pub.py \
         --pandepth $QC \
         --pangolin $pangolin \
         --nextclade $nextclade \

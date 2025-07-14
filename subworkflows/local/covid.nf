@@ -5,6 +5,8 @@ include { QUAST } from '../../modules/nf-core/quast/main'
 include { ARTIC_MINION } from '../../modules/nf-core/artic/minion/main'
 include { PANGO_COLLAPSE } from '../../modules/local/pangocollapse'
 include { SUMMARY_COV } from '../../modules/local/summary_covid'
+include { SAMTOOLS_DEPTH_COV } from '../../modules/local/samtools_depth_cov'
+include { DATAMASH } from '../../modules/local/datamash'
 
 
 //subworkflows
@@ -27,6 +29,7 @@ workflow COVID {
     ch_versions = ch_versions.mix(READ_PREPROCESS.out.versions)
 
     runID= params.run_id
+    amplicon = "COV"
     //take the name of the primer bed file before the .bed as the metadata
     ch_primer_bed = Channel.of(['covid_primer', file(params.covid_primer_bed)])
     ch_reference = Channel.of(['covid_reference', file(params.covid_reference)])
@@ -84,11 +87,22 @@ workflow COVID {
         // Return the modified file
         return file
     }
-    .collectFile(name: 'COVID_pandepth_summary.tsv', storeDir: "${params.outdir}/COVID", keepHeader: true)
+    .collectFile(name: 'COVID_pandepth_summary.tsv', storeDir: "${params.outdir}/${runID}_${amplicon}", keepHeader: true)
     .set { pandepthSummaryFile }
 
 //pandepthSummaryFile.view() // Inspect the final result
 
+    SAMTOOLS_DEPTH_COV (
+        ARTIC_MINION.out.bam_primertrimmed
+    )
+    ch_versions = ch_versions.mix(SAMTOOLS_DEPTH_COV.out.versions) 
+    
+
+    DATAMASH (
+        SAMTOOLS_DEPTH_COV.out.tsv
+    )
+    ch_versions = ch_versions.mix(DATAMASH.out.versions) 
+    
     QUAST(
         ARTIC_MINION.out.fasta,
         ch_reference.first(),
@@ -98,12 +112,12 @@ workflow COVID {
 
     QUAST.out.trans_tsv
     .map { it[1] }
-    .collectFile(name: "${runID}_quast.tsv", storeDir: params.outdir, sort: true)
+    .collectFile(name: "${runID}_quast.tsv", storeDir: "${params.outdir}/${runID}_${amplicon}", sort: true)
     .set { ch_quast_report }
 
     ARTIC_MINION.out.fasta
     .map { it[1] }
-    .collectFile(name: "${runID}_covid.fasta", storeDir: "${params.outdir}/COVID") // Concatenate into one file
+    .collectFile(name: "${runID}_covid.fasta", storeDir: "${params.outdir}/${runID}_${amplicon}") // Concatenate into one file
     .set { multiFasta }
 
     NEXTCLADE_SUB(
@@ -112,7 +126,7 @@ workflow COVID {
     )
     ch_versions = ch_versions.mix(NEXTCLADE_SUB.out.versions)
 
-    nextclade_summary = NEXTCLADE_SUB.out.report_tsv.collectFile(name: "${runID}_COVID_nextclade_summary.tsv", storeDir: "${params.outdir}/COVID", sort: true)
+    nextclade_summary = NEXTCLADE_SUB.out.report_tsv.collectFile(name: "${runID}_COVID_nextclade_summary.tsv", storeDir: "${params.outdir}/${runID}_${amplicon}", sort: true)
     
     PANGO_COLLAPSE(
         NEXTCLADE_SUB.out.report_tsv,
@@ -125,7 +139,7 @@ workflow COVID {
         multiFasta.map { [runID, it] }
     )
     ch_versions = ch_versions.mix(PANGOLIN.out.versions)
-    ch_pangolin_report = PANGOLIN.out.report.collectFile(name: "${runID}_pangolin.tsv", storeDir: "${params.outdir}/COVID/pangolin", sort: true)
+    ch_pangolin_report = PANGOLIN.out.report.collectFile(name: "${runID}_pangolin.csv", storeDir: "${params.outdir}/${runID}_COV/pangolin", sort: true)
    
     ANNOTATION(
         ARTIC_MINION.out.fasta,

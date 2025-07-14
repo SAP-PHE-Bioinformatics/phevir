@@ -5,13 +5,15 @@ import csv
 import argparse
 
 # Dictionary containing data for various flu subtypes with their associated datasets.
+# exclude H5 samples through nextclade as results are currently uninformative (13/03/2025)
 flu_subtypes = {
     "H1N1": {"dataset": "flu_h1n1pdm_ha"},
     "H3N2": {"dataset": "flu_h3n2_ha"},
     "Victoria": {"dataset": "flu_vic_ha"},
-    "Yamagata": {"dataset": "flu_yam_ha"},
-    "H5N1": {"dataset": "community/moncla-lab/iav-h5/ha/all-clades"}
+    "Yamagata": {"dataset": "flu_yam_ha"}
+   # "H5N1": {"dataset": "community/moncla-lab/iav-h5/ha/all-clades"}
 }
+
 
 
 def main():
@@ -56,7 +58,7 @@ def main():
     if flu_subtype not in flu_subtypes:
         print(f"Error: Invalid flu subtype '{flu_subtype}' for sample '{args.sample}'")
         return
-
+    
     # Prepare the dataset and output file path
     dataset = flu_subtypes[flu_subtype]["dataset"]
     output_file_path = f"{args.sample}_dataset.txt"

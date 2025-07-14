@@ -36,7 +36,9 @@ workflow NEXTCLADE_SUB {
 
     input= run_samples.join(NEXTCLADE_DATASETGET.out.dataset_fetch)
 
-    NEXTCLADE(input.map { it[1] }, input.map { [it[0], it[2]] })
+    NEXTCLADE(input.map { it[1] }, input.map { [it[0], it[2]] }) // deleted index 1 as we don't want to merge H4 samples with the mix function
+  //  NEXTCLADE(input.map { [it[0], it[2]] })
+
     ch_prealigned.mix(NEXTCLADE.out.prealigned)
     ch_nextclade_report = NEXTCLADE.out.nextclade_file
 

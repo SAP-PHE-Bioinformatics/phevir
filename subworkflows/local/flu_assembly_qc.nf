@@ -50,6 +50,9 @@ workflow ASSEMBLY_QC {
 
     ch_versions = ch_versions.mix(IRMA.out.versions)
 
+    runID= params.run_id
+    amplicon = "IAV"
+
     ch_HA = IRMA.out.HA
     ch_NA = IRMA.out.NA
 
@@ -70,25 +73,58 @@ workflow ASSEMBLY_QC {
         }
 
     //IRMA_REPORT(ch_irma_consensus_qc_results)
-    irma_consensus_qc_tsv = ch_irma_consensus_qc_results.collectFile(name: "irma_consensus_qc.tsv", storeDir: "${params.outdir}/IAV", keepHeader: true, sort: true, skip: 1)
+    irma_consensus_qc_tsv = ch_irma_consensus_qc_results.collectFile(name: "irma_consensus_qc.tsv", storeDir: "${params.outdir}/${runID}_${amplicon}", keepHeader: true, sort: true, skip: 1)
 
-    IRMA.out.irma_fasta
-        .flatMap { meta, fasta_file_paths ->
-        // Collect each bam file and map it with the updated metadata
-        fasta_file_paths.collect { fasta_file ->
-            def file_name = fasta_file.name
+//     IRMA.out.irma_fasta
+//         .flatMap { meta, fasta_file_paths ->
+//         // Collect each bam file and map it with the updated metadata
+//         fasta_file_paths.collect { fasta_file ->
+//             def file_name = fasta_file.name
 
-            // Extract segment information from the file name
+//             // Extract segment information from the file name
+//             def segment = file_name.replaceFirst(/A_/, '').replace('.fasta', '')
+
+//             // Add the segment to the meta information
+//             def updated_meta = meta + [segment: segment]
+
+//             // Return each [meta, fasta_file] as separate elements
+//             return [updated_meta, fasta_file]
+//         }
+//     }
+//    .set{ fasta_files_individual }
+
+IRMA.out.irma_fasta
+    .flatMap { meta, fasta_file_paths ->
+        // Ensure we only keep existing FASTA files
+        def valid_fasta_files = fasta_file_paths.findAll { path ->
+            def exists = path.exists()
+            def isFasta = path.getName().toLowerCase().endsWith('.fasta')
+
+            // Debugging output
+            def debugMessage = "DEBUG: Processing meta: ${meta}, fasta_file_paths: ${fasta_file_paths}\n"
+            
+            // Write the debug message to a file
+            file("debug_output.txt").append(debugMessage)
+
+            return exists && isFasta
+        }
+
+        // If no valid FASTA files, skip processing for this sample
+        if (valid_fasta_files.isEmpty()) {
+            println "Warning: No valid FASTA files found for ${meta}. Skipping."
+            return []
+        }
+
+        // Process only the valid fasta files and associate them with updated metadata
+        return valid_fasta_files.collect { fasta_file ->
+            def file_name = fasta_file.getName()
             def segment = file_name.replaceFirst(/A_/, '').replace('.fasta', '')
-
-            // Add the segment to the meta information
             def updated_meta = meta + [segment: segment]
 
-            // Return each [meta, fasta_file] as separate elements
             return [updated_meta, fasta_file]
         }
     }
-   .set{ fasta_files_individual }
+    .set { fasta_files_individual }
 
     IRMA.out.irma_bam
     .flatMap { meta, bam_file_paths ->
@@ -128,7 +164,7 @@ workflow ASSEMBLY_QC {
 
     MERGE_STATS(ch_combined)
     
-    all_sample_stats=MERGE_STATS.out.merged_stats.collectFile(name: "all_FLU_samples_merged.stats", storeDir: "${params.outdir}/IAV", keepHeader: true, sort: true, skip: 1)
+    all_sample_stats=MERGE_STATS.out.merged_stats.collectFile(name: "all_FLU_samples_merged.stats", storeDir: "${params.outdir}/${runID}_${amplicon}", keepHeader: true, sort: true, skip: 1)
 
     ABRICATE_FLU(IRMA.out.assembly)
     ch_versions = ch_versions.mix(ABRICATE_FLU.out.versions)
@@ -152,7 +188,7 @@ workflow ASSEMBLY_QC {
         }
 
 
-    typing_report_tsv = ABRICATE_REPORT.out.tsv_combined.map { meta, file -> file }.collectFile(name: 'flu_typing_report.tsv', storeDir: "${params.outdir}/IAV", sort: true, keepHeader: true, skip: 1)
+    typing_report_tsv = ABRICATE_REPORT.out.tsv_combined.map { meta, file -> file }.collectFile(name: 'flu_typing_report.tsv', storeDir: "${params.outdir}/${runID}_${amplicon}", sort: true, keepHeader: true, skip: 1)
 
     ch_nextclade_for_sort = ABRICATE_REPORT.out.tsv_combined
 

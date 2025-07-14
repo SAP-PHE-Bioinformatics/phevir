@@ -34,7 +34,7 @@ workflow PHEVIR {
     // ch_samplesheet.view() 
     ch_influenza = ch_samplesheet.filter { meta, reads -> meta.amplicon.contains('IAV') }
     ch_mpx = ch_samplesheet.filter { meta, reads -> meta.amplicon.contains('MPOX') }
-    ch_covid = ch_samplesheet.filter { meta, reads -> meta.amplicon.contains('COVID') }
+    ch_covid = ch_samplesheet.filter { meta, reads -> meta.amplicon.contains('COV') }
 
 
 // Compute counts from the channel

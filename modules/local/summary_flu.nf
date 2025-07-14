@@ -20,11 +20,13 @@ process SUMMARY_IAV {
     
     output:
     path("${runID}_IAV.csv"), emit: report
+    path("${runID}_detailed_IAV.csv"), emit: detailed_report
+
 
     script:
     """
 
-     summary_flu.py --excel $blast \\
+     summary_flu_pub.py --excel $blast \\
     --tsv $nextclade \\
     --run $runID \\
     --qc $qc --kraken2 $kraken2 --drug $drug_sensitivity_report --mut $mutation_report --typing $typing_report_tsv --irma $irma_consensus_qc

@@ -108,12 +108,15 @@ def main(tsv_file_path, excel_file_path, qc_file_path, kraken2_file_path, drug_s
     # Read QC file
     df_qc = pd.read_csv(qc_file_path, sep='\t', names=[
         'Sample', 'Segment', 'TotalDepth', 'MeanDepth', 'reference_length', 'seq_length', 'Coverage'
-    ], skiprows=1)
+    ])
     df_qc['Sample'] = df_qc['Sample'].astype(str)
+    print(df_qc)
     #df_qc['Segment'] = df_qc['Segment'].str.extract(r'_(\w+)$')[0]
     df_qc['Segment'] = df_qc['Segment'].str.extract(r'([A-Za-z0-9]+(?:_[A-Za-z0-9]+)?)$')[0]
+    print(df_qc)
     # Remove any prefix (e.g., "A_" or "B_") if present
     df_qc['Segment'] = df_qc['Segment'].str.replace(r'^[AB]_', '', regex=True)
+    print(df_qc)
     df_qc['MeanDepth'] = pd.to_numeric(df_qc['MeanDepth'], errors='coerce')
     df_qc['Coverage'] = pd.to_numeric(df_qc['Coverage'], errors='coerce')
     #df_qc_cleaned = df_qc.dropna(subset=['Sample', 'Segment', 'MeanDepth']) - CS edit
